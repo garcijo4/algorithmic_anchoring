@@ -1,86 +1,57 @@
-# Algorithmic Anchoring — LLM Financial Estimate Bias
+# Algorithmic Anchoring
 
-**Author:** John Garcia, California Lutheran University  
-**Version:** 2.0 (February 2026)
+This repository contains the code and data necessary to replicate the study on algorithmic anchoring in Large Language Models (LLMs). The study investigates whether, and to what extent, LLMs are susceptible to anchoring biases when performing financial valuation tasks.
 
-## Overview
+## Repository Structure
 
-This project investigates anchoring bias in large language models (LLMs) when making financial valuation estimates. The experiment presents LLMs with company profiles containing various anchoring manipulations and measures the resulting bias in price targets, earnings forecasts, and risk assessments.
+- `R/` - Contains all R source code:
+  - `anchoring_experiment.R` - The main script to run the API experiments.
+  - `analysis_pipeline.R` - The primary data analysis and figure generation script.
+  - `scripts/` - Ad-hoc and supplementary analysis scripts.
+  - `tests/` - Robustness checks and additional tests.
+- `config/` - Configuration files (e.g., `.Renviron` for API keys).
+- `data/` - Raw output and datasets.
+- `results/` - Processed outputs, models, and generated figures.
+- `*.bat` - Windows batch files to execute the pipeline.
 
-## Project Structure
+## Prerequisites
 
-```
-algorithmic-anchoring/
-├── R/                          # All R source files
-│   ├── anchoring_experiment.R  # Prompt library + API runner
-│   ├── analysis_pipeline.R     # Statistical analysis
-│   ├── parse_responses.R       # Response extraction logic
-│   └── utils.R                 # Shared helper functions
-├── data/
-│   ├── raw/                    # Raw API responses (JSON + CSV)
-│   ├── processed/              # Parsed, cleaned datasets
-│   ├── calibration/            # Baseline calibration results
-│   └── pilot/                  # Pilot run outputs
-├── results/
-│   ├── exp1a_valuation/        # Between-subjects anchoring
-│   ├── exp1b_sequential/       # Within-subjects revision
-│   ├── exp2_earnings/
-│   ├── exp3_risk/
-│   └── manipulation_checks/
-├── analysis/
-│   ├── figures/                # Publication-ready figures
-│   └── tables/                 # Formatted regression tables
-├── manuscript/
-│   ├── sections/               # Drafts by section
-│   └── references/             # .bib files
-├── preregistration/            # OSF pre-registration docs
-├── config/
-│   └── .Renviron               # API keys (gitignored)
-├── logs/                       # Execution logs
-└── README.md
+To explicitly replicate this study, you will need **R 4.5.2** (or higher) and the following R packages installed:
+
+```R
+install.packages(c(
+  "tidyverse", "broom", "sandwich", "lmtest", "boot", 
+  "scales", "systemfit", "lfe", "car", "httr2", 
+  "jsonlite", "glue", "cli", "digest", "optparse", 
+  "clubSandwich"
+))
 ```
 
-## Experiments
-
-| Experiment | Description | Hypothesis |
-|------------|-------------|------------|
-| **1A** | Between-subjects stock valuation with anchors | H1: Anchoring shifts LLM price targets |
-| **1B** | Within-subjects sequential revision | H1b: Insufficient adjustment from anchor |
-| **2** | Earnings forecast anchoring | H2: Anchoring generalizes to EPS estimates |
-| **3** | Credit risk assessment anchoring | H2b: Anchoring affects default probability |
-
-## Quick Start
-
-```r
-# Install dependencies
-install.packages(c("httr2", "jsonlite", "tidyverse", "glue", "cli",
-                    "digest", "optparse", "arrow"))
-
-# Test a single prompt
-Rscript R/anchoring_experiment.R --mode test --company 1 --anchor 52wk_high_30pct
-
-# Run pilot (2 companies × 3 conditions × 1 model × 10 reps)
-Rscript R/anchoring_experiment.R --mode pilot
-
-# Run calibration (all companies, control only, all models, 4 temperatures)
-Rscript R/anchoring_experiment.R --mode calibrate
-
-# Run full experiment (batch 1 of 4)
-Rscript R/anchoring_experiment.R --mode full --batch 1
+If you plan to run the *data generation* step (the experiment itself), you will also need active API keys for the respective models being tested (e.g., OpenAI, Anthropic, Google).
+Create an environment file at `config/.Renviron` with your API keys:
+```
+OPENAI_API_KEY="your_key_here"
+ANTHROPIC_API_KEY="your_key_here"
+GEMINI_API_KEY="your_key_here"
 ```
 
-## API Setup
+## Replication Instructions
 
-Copy `config/.Renviron` to your project root and add your API keys:
-
+### 1. Data Generation (Experiment Execution)
+If you wish to re-run the full experiment and regenerate the API responses from the models, run the following batch script from the root of the project:
+```cmd
+run_all_batches.bat
 ```
-ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
-GOOGLE_API_KEY=AIza...
+*Note: This process runs synchronously for all models and can take several hours to complete.*
+
+### 2. Data Analysis & Results
+If you have the experimental data (or have just generated it), you can run the full analysis pipeline. This will process the model outputs, run the regressions, and generate the tables and figures used in the paper:
+```cmd
+analyze_all_batches.bat
 ```
+The analysis scripts output their results to the `results/` folder, including standard `.txt` summaries and generated visualizations.
 
-## Models Tested
+## Key Scripts
 
-- Claude 3.5 Sonnet (`claude-sonnet-4-20250514`)
-- GPT-4o (`gpt-4o`)
-- Gemini 2.0 Flash (`gemini-2.0-flash`)
+- **`R/anchoring_experiment.R`**: Core logic for prompting the models and logging their responses.
+- **`R/analysis_pipeline.R`**: Cleans the text responses, extracts numerical valuations, runs statistical testing (OLS, SUR), and formats the output tables.

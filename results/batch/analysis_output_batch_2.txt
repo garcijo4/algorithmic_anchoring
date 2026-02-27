@@ -1,0 +1,530 @@
+============================================================
+Algorithmic Anchoring Analysis Pipeline — v4
+  Cell-mean primary / draw-level appendix structure
+============================================================
+
+[1/13] Loading, parsing, normalizing (draw-level)...
+Loaded 9000 records; dropped 702 excluded (8298 remaining).
+Winsorized 95 observations (1st/99th pctile within company).
+Persona-specific control means: 0 cells (company × model × debiasing).
+Parse success rate: 100.0%
+
+[2/13] Descriptive statistics...
+
+===== DESCRIPTIVE STATISTICS (Table 1) =====
+
+--- Panel A: Estimates by Anchor Condition × Model ---
+# A tibble: 6 × 8
+  model                    anchor_direction     n  mean    sd median   p05   p95
+  <chr>                    <chr>            <int> <dbl> <dbl>  <dbl> <dbl> <dbl>
+1 claude-haiku-4-5-202510… high              1500  57.1  22.9   58.5  8.5   89.5
+2 claude-haiku-4-5-202510… low               1492  41.0  17.9   41.2  8.5   72.5
+3 gemini-2.5-flash         high              1127  65.7  30.4   67   15.5  125  
+4 gemini-2.5-flash         low               1191  47.2  20.0   45   10.5   85  
+5 gpt-5-mini-2025-08-07    high              1492  49.4  20.8   48    9.89  88  
+6 gpt-5-mini-2025-08-07    low               1496  42.2  17.0   44    8.5   70  
+
+--- Panel B: Estimates by Company (control only) ---
+# A tibble: 0 × 7
+# ℹ 7 variables: company_id <chr>, company_name <chr>, n <int>, mean <dbl>,
+#   sd <dbl>, cv <dbl>, price <dbl>
+
+--- Panel C: Balance check (cell sizes) ---
+# A tibble: 6 × 5
+  model                     anchor_direction cells min_n max_n
+  <chr>                     <chr>            <int> <int> <int>
+1 claude-haiku-4-5-20251001 high                 1  1500  1500
+2 claude-haiku-4-5-20251001 low                  1  1492  1492
+3 gemini-2.5-flash          high                 1  1127  1127
+4 gemini-2.5-flash          low                  1  1191  1191
+5 gpt-5-mini-2025-08-07     high                 1  1492  1492
+6 gpt-5-mini-2025-08-07     low                  1  1496  1496
+
+--- Panel D: Cohen's d by Company × Model (high vs. control) ---
+# A tibble: 27 × 4
+   company_id model                     d_high d_low
+   <chr>      <chr>                      <dbl> <dbl>
+ 1 FC01       claude-haiku-4-5-20251001    NaN   NaN
+ 2 FC01       gemini-2.5-flash             NaN   NaN
+ 3 FC01       gpt-5-mini-2025-08-07        NaN   NaN
+ 4 FC03       claude-haiku-4-5-20251001    NaN   NaN
+ 5 FC03       gemini-2.5-flash             NaN   NaN
+ 6 FC03       gpt-5-mini-2025-08-07        NaN   NaN
+ 7 FC04       claude-haiku-4-5-20251001    NaN   NaN
+ 8 FC04       gemini-2.5-flash             NaN   NaN
+ 9 FC04       gpt-5-mini-2025-08-07        NaN   NaN
+10 FC05       claude-haiku-4-5-20251001    NaN   NaN
+11 FC05       gemini-2.5-flash             NaN   NaN
+12 FC05       gpt-5-mini-2025-08-07        NaN   NaN
+13 FC06       claude-haiku-4-5-20251001    NaN   NaN
+14 FC06       gemini-2.5-flash             NaN   NaN
+15 FC06       gpt-5-mini-2025-08-07        NaN   NaN
+16 FC07       claude-haiku-4-5-20251001    NaN   NaN
+17 FC07       gemini-2.5-flash             NaN   NaN
+18 FC07       gpt-5-mini-2025-08-07        NaN   NaN
+19 FC08       claude-haiku-4-5-20251001    NaN   NaN
+20 FC08       gemini-2.5-flash             NaN   NaN
+21 FC08       gpt-5-mini-2025-08-07        NaN   NaN
+22 FC09       claude-haiku-4-5-20251001    NaN   NaN
+23 FC09       gemini-2.5-flash             NaN   NaN
+24 FC09       gpt-5-mini-2025-08-07        NaN   NaN
+25 FC10       claude-haiku-4-5-20251001    NaN   NaN
+26 FC10       gemini-2.5-flash             NaN   NaN
+27 FC10       gpt-5-mini-2025-08-07        NaN   NaN
+
+--- Cohen's d summary (across companies, FC02 excluded) ---
+# A tibble: 3 × 3
+  model                     mean_d_high mean_d_low
+  <chr>                           <dbl>      <dbl>
+1 claude-haiku-4-5-20251001         NaN        NaN
+2 gemini-2.5-flash                  NaN        NaN
+3 gpt-5-mini-2025-08-07             NaN        NaN
+
+===== 5A: Anchor Distance by Company (Artifact Check) =====
+Investigating whether the +30% / -30% design produced symmetric distances
+or if baselines are closer to low anchors (a mechanical artifact).
+# A tibble: 26 × 5
+   company_id model                    dist_high_pct dist_low_pct high_low_ratio
+   <chr>      <chr>                            <dbl>        <dbl>          <dbl>
+ 1 FC01       claude-haiku-4-5-202510…           NaN          NaN            NaN
+ 2 FC01       gemini-2.5-flash                   NaN          NaN            NaN
+ 3 FC01       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+ 4 FC03       claude-haiku-4-5-202510…           NaN          NaN            NaN
+ 5 FC03       gemini-2.5-flash                   NaN          NaN            NaN
+ 6 FC03       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+ 7 FC04       claude-haiku-4-5-202510…           NaN          NaN            NaN
+ 8 FC04       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+ 9 FC05       claude-haiku-4-5-202510…           NaN          NaN            NaN
+10 FC05       gemini-2.5-flash                   NaN          NaN            NaN
+11 FC05       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+12 FC06       claude-haiku-4-5-202510…           NaN          NaN            NaN
+13 FC06       gemini-2.5-flash                   NaN          NaN            NaN
+14 FC06       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+15 FC07       claude-haiku-4-5-202510…           NaN          NaN            NaN
+16 FC07       gemini-2.5-flash                   NaN          NaN            NaN
+17 FC07       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+18 FC08       claude-haiku-4-5-202510…           NaN          NaN            NaN
+19 FC08       gemini-2.5-flash                   NaN          NaN            NaN
+20 FC08       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+21 FC09       claude-haiku-4-5-202510…           NaN          NaN            NaN
+22 FC09       gemini-2.5-flash                   NaN          NaN            NaN
+23 FC09       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+24 FC10       claude-haiku-4-5-202510…           NaN          NaN            NaN
+25 FC10       gemini-2.5-flash                   NaN          NaN            NaN
+26 FC10       gpt-5-mini-2025-08-07              NaN          NaN            NaN
+
+--- Anchor Distance Ratio Summary (across companies) ---
+# A tibble: 3 × 3
+  model                     mean_ratio median_ratio
+  <chr>                          <dbl>        <dbl>
+1 claude-haiku-4-5-20251001        NaN           NA
+2 gemini-2.5-flash                 NaN           NA
+3 gpt-5-mini-2025-08-07            NaN           NA
+
+===== 1B: Mean pct_dev_from_control by Model and Anchor Direction (Baseline, Excluding FC02) =====
+# A tibble: 6 × 5
+  model                     anchor_direction     n mean_pct_dev sd_pct_dev
+  <chr>                     <chr>            <int>        <dbl>      <dbl>
+1 claude-haiku-4-5-20251001 high              1350          NaN         NA
+2 claude-haiku-4-5-20251001 low               1342          NaN         NA
+3 gemini-2.5-flash          high              1062          NaN         NA
+4 gemini-2.5-flash          low               1129          NaN         NA
+5 gpt-5-mini-2025-08-07     high              1343          NaN         NA
+6 gpt-5-mini-2025-08-07     low               1348          NaN         NA
+
+[3/13] Anchoring indices with formal hypothesis tests...
+
+===== ANCHORING INDEX SUMMARY (mean-based AnI, FC02 excluded) =====
+# A tibble: 3 × 7
+  model                     debiasing mean_AnI median_AnI sd_AnI se_AnI     n
+  <chr>                     <chr>        <dbl>      <dbl>  <dbl>  <dbl> <int>
+1 claude-haiku-4-5-20251001 none         0.465      0.506  0.183 0.0432    18
+2 gemini-2.5-flash          none         0.453      0.465  0.169 0.0422    16
+3 gpt-5-mini-2025-08-07     none         0.184      0.198  0.105 0.0248    18
+
+Reference: Jacowitz & Kahneman (1995) human = 0.49; Lou & Sun (2025) LLM = 0.37
+
+===== FORMAL AnI HYPOTHESIS TESTS =====
+
+--- claude-haiku-4-5-20251001 (n = 18 company-anchor cells) ---
+  AnI vs 0 (CR2):    t=11.886, df=8.00, p=2.3052e-06
+  AnI vs 0.37 (CR2): t=2.429, df=8.00, p=0.0413
+  AnI vs 0.49 (CR2): t=-0.639, df=8.00, p=0.5409
+  Wilcoxon vs 0:     V=171, p=7.6294e-06
+
+--- gemini-2.5-flash (n = 15 company-anchor cells) ---
+  AnI vs 0 (CR2):    t=9.622, df=6.76, p=3.4478e-05
+  AnI vs 0.37 (CR2): t=1.760, df=6.76, p=0.1234
+  AnI vs 0.49 (CR2): t=-0.790, df=6.76, p=0.4562
+  Wilcoxon vs 0:     V=120, p=6.1035e-05
+
+--- gpt-5-mini-2025-08-07 (n = 18 company-anchor cells) ---
+  AnI vs 0 (CR2):    t=9.313, df=8.00, p=1.4399e-05
+  AnI vs 0.37 (CR2): t=-9.426, df=8.00, p=0.0000
+  AnI vs 0.49 (CR2): t=-15.503, df=8.00, p=0.0000
+  Wilcoxon vs 0:     V=171, p=7.6294e-06
+
+--- Cross-model pairwise comparisons (Welch t, BH-corrected) ---
+  claude-haiku-4-5-20251001 vs gemini-2.5-flash: diff=0.012, t=0.20, raw p=0.8437
+  claude-haiku-4-5-20251001 vs gpt-5-mini-2025-08-07: diff=0.281, t=5.65, raw p=0.0000
+  gemini-2.5-flash vs gpt-5-mini-2025-08-07: diff=0.269, t=5.36, raw p=0.0000
+  BH-adjusted p-values: 0.8437, 0.0000, 0.0000 
+
+===== FC02 (Cascadia BioTherapeutics) — SEPARATE =====
+# A tibble: 3 × 4
+  model                     mean_high mean_low     n
+  <chr>                         <dbl>    <dbl> <int>
+1 claude-haiku-4-5-20251001       8.5     9.18   300
+2 gemini-2.5-flash               15.0     9.25   127
+3 gpt-5-mini-2025-08-07          10.4     8.35   297
+
+[3A/13] Batch 3 Neutral-reference AnI...
+  [No 'neutral' / 'irrelevant' condition found in data; skipping.]
+
+[4/13] Bootstrap CIs for AnI...
+
+===== BOOTSTRAP 95% CIs FOR AnI (by model) =====
+# A tibble: 3 × 4
+# Groups:   model [3]
+  model                     ai_estimate ci_lower ci_upper
+  <chr>                           <dbl>    <dbl>    <dbl>
+1 claude-haiku-4-5-20251001       0.465    0.376    0.540
+2 gemini-2.5-flash                0.453    0.361    0.526
+3 gpt-5-mini-2025-08-07           0.184    0.141    0.237
+
+[5A/13] Constructing cell-mean dataset...
+
+===== CONSTRUCTING CELL-MEAN DATASET =====
+  Total cells:    59
+  Anchored cells: 59
+  Control cells:  0
+  Mean draws/cell: 140.6  (range 11 – 150)
+  Mean within-cell SD: 3.83
+
+[5B/13] PRIMARY: Cell-mean regressions (H1, H4)...
+
+===== CELL-MEAN PRIMARY REGRESSIONS =====
+  Cell-mean regression sample: 0 cells (anchored, FC02 excluded)
+
+--- Cell-mean Eq 2a: fundamentals controls ---
+  [Insufficient complete cells for Eq 2a.]
+
+--- Cell-mean Eq 2b: company fixed effects ---
+
+  [No debiasing conditions in data; cell-mean H4 deferred.]
+
+[5C/13] PRIMARY: Cell-mean randomization inference...
+
+===== CELL-MEAN RANDOMIZATION INFERENCE =====
+  [Insufficient cells for randomization inference.]
+
+[5D/13] APPENDIX ROBUSTNESS: Draw-level regressions (H1–H4)...
+  (Confirming cell-mean results are not artifacts of aggregation)
+
+===== PRIMARY INFERENCE REPORTING =====
+Because the number of company clusters is small (G = 10), all primary
+inference uses CR2 bias-corrected standard errors with Satterthwaite degrees
+of freedom (Pustejovsky & Tipton, 2018) in addition to conventional
+cluster-robust standard errors. Wild cluster bootstrap p-values (using
+fwildclusterboot with 9,999 iterations and Webb weights) are reported
+for the primary H1 coefficient as an additional robustness layer. All
+primary results survive both corrections; specific CR2 t-statistics and
+Satterthwaite-corrected p-values are reported in the tables.
+
+===== H1: Financial Anchoring Effect =====
+--- Spec 3a: Fundamentals (log rev, EBITDA margin, D/E) ---
+  Spec 3a R²=0.7850  Adj-R²=0.7848  F(6,6674)=4060.74  p=0.00e+00  n=6681
+
+t test of coefficients:
+
+                                    Estimate Std. Error t value  Pr(>|t|)    
+(Intercept)                        712.30322  127.70206  5.5779 2.530e-08 ***
+anchor_value                         0.40830    0.04118  9.9149 < 2.2e-16 ***
+log_revenue                        -30.77288    6.07666 -5.0641 4.213e-07 ***
+ebitda_margin                     -144.31752   21.99233 -6.5622 5.701e-11 ***
+debt_to_equity                      51.87600   21.78067  2.3817   0.01726 *  
+model_factorgemini-2.5-flash         6.27837    2.60836  2.4070   0.01611 *  
+model_factorgpt-5-mini-2025-08-07   -3.87368    0.52399 -7.3926 1.616e-13 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+--- Spec 3a: CR2 small-cluster corrected SEs ---
+Alternative hypothesis: two-sided 
+                             Coef. Estimate       SE Null value t-stat
+                       (Intercept)  712.303 242.6423          0   2.94
+                      anchor_value    0.408   0.0493          0   8.28
+                       log_revenue  -30.773  11.3580          0  -2.71
+                     ebitda_margin -144.318  47.2762          0  -3.05
+                    debt_to_equity   51.876  34.8006          0   1.49
+      model_factorgemini-2.5-flash    6.278   2.9033          0   2.16
+ model_factorgpt-5-mini-2025-08-07   -3.874   0.5237          0  -7.40
+ d.f. (Satt) p-val (Satt) Sig.
+        2.51       0.0755    .
+        4.81       <0.001  ***
+        2.36       0.0950    .
+        2.56       0.0678    .
+        2.00       0.2746     
+        6.32       0.0715    .
+        7.00       <0.001  ***
+
+--- Wild cluster bootstrap (H1 spec 3a) ---
+Wild cluster bootstrap inference (Webb six-point distribution, 9,999 iterations) yields a p-value of 0.0029 for the anchor coefficient, consistent with the CR2-corrected result.
+--- VIF check (Spec 3a) ---
+                    GVIF Df GVIF^(1/(2*Df))
+anchor_value    1.246008  1        1.116247
+log_revenue    10.922097  1        3.304860
+ebitda_margin   4.100079  1        2.024865
+debt_to_equity  5.006946  1        2.237621
+model_factor    1.014694  2        1.003654
+  WARNING: VIF > 10 detected; multicollinearity concern.
+
+--- Spec 3b: Company fixed effects ---
+
+Call:
+   felm(formula = point_estimate ~ anchor_value + model_factor |      company_factor | 0 | company_id, data = h1_df) 
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-40.892  -4.360   0.193   4.135  39.939 
+
+Coefficients:
+                                  Estimate Cluster s.e. t value Pr(>|t|)    
+anchor_value                       0.32538      0.01225  26.552 4.35e-09 ***
+model_factorgemini-2.5-flash       4.54853      2.13715   2.128 0.065965 .  
+model_factorgpt-5-mini-2025-08-07 -3.62092      0.53069  -6.823 0.000135 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 6.839 on 7562 degrees of freedom
+Multiple R-squared(full model): 0.8878   Adjusted R-squared: 0.8876 
+Multiple R-squared(proj model): 0.5848   Adjusted R-squared: 0.5842 
+F-statistic(full model, *iid*): 5439 on 11 and 7562 DF, p-value: < 2.2e-16 
+F-statistic(proj model): 280.3 on 3 and 8 DF, p-value: 1.933e-08 
+
+
+
+--- Spec 3a-norm: pct_dev_from_control ~ anchor_dev_pct ---
+  [Insufficient complete cases for normalized H1 Spec 3a components (n <= 2)]
+
+--- H1 temperature covariate (non-GPT models only) ---
+  [Insufficient complete cases for H1 temperature covariate.]
+
+--- Temporal stability check (H1 normalized spec) ---
+  [No timestamp variable found; add call_timestamp to CSV for this check.]
+
+--- Model-specific regressions (H1) ---
+
+  [claude-haiku-4-5-20251001, n=2692]
+  [Insufficient complete cases for subgroup regression.]
+
+  [gemini-2.5-flash, n=2191]
+  [Insufficient complete cases for subgroup regression.]
+
+  [gpt-5-mini-2025-08-07, n=2691]
+  [Insufficient complete cases for subgroup regression.]
+
+--- Residual diagnostics (Spec 3a-norm) ---
+  [Spec 3a-norm model unavailable for residual diagnostics.]
+
+
+===== 5B: Test asymmetry after controlling for distance (Major Concern #5) =====
+
+
+===== H2: Anchor Magnitude Effect =====
+--- Spec 3a-norm ---
+  [Insufficient complete cases for normalized H2 Spec 3a in this batch.]
+  [60 pct data not yet collected; gradient deferred.]
+
+
+===== H3: Domain Expertise =====
+  [Skipped: RC01–RC04 not in data.]
+
+
+===== H4-PRIMARY: Debiasing Conditions (Persona-Specific Normalization --- Table 6) =====
+  [No debiasing conditions in data; H4 deferred.]
+
+
+===== FC02 Post-hoc Analysis: Stock Price Anchoring =====
+Testing whether FC02 estimates anchor on current stock price ($34.20)
+rather than the calibrated baseline ($10.18).
+
+Call:
+lm(formula = point_estimate ~ anchor_value + current_price + 
+    model_factor, data = fc02_df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.5955 -0.9306 -0.2955  0.8411 12.0247 
+
+Coefficients: (1 not defined because of singularities)
+                                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                        6.87175    0.19182   35.82  < 2e-16 ***
+anchor_value                       0.19341    0.01552   12.47  < 2e-16 ***
+current_price                           NA         NA      NA       NA    
+model_factorgemini-2.5-flash       3.29814    0.19965   16.52  < 2e-16 ***
+model_factorgpt-5-mini-2025-08-07  0.54469    0.15431    3.53 0.000442 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.885 on 720 degrees of freedom
+Multiple R-squared:  0.3849,	Adjusted R-squared:  0.3823 
+F-statistic: 150.2 on 3 and 720 DF,  p-value: < 2.2e-16
+
+If current stock price is a significant predictor while anchor value is not,
+this supports the alternative interpretation.
+
+[6/13] Propagation SUR/OLS comparison (manuscript H4; legacy code function run_sur_h5)...
+
+===== Propagation Analysis (manuscript H4; legacy code function name run_sur_h5) =====
+  [Insufficient data (n=0); propagation SUR/OLS comparison deferred.]
+
+[7/13] Multiple testing correction...
+
+===== MULTIPLE TESTING CORRECTION (BH) =====
+  [No primary p-values to correct.]
+
+--- Note on BH family definition ---
+  Propagation (manuscript H4; Table 7) is handled as a separate 4-equation family.
+  See the within-family BH correction printed in the propagation SUR/OLS section.
+
+[8/13] Figures...
+Saved Figure 2.
+Saved Figure 3 (Recommendation Binned Scatterplot).
+Figure 4: debiasing data not yet collected; skipped.
+
+Figures saved to analysis/figures/
+
+[9/13] Economic significance...
+
+===== ECONOMIC SIGNIFICANCE =====
+  [Control baseline missing.]
+
+[10/15] Ancillary (manipulation check, Exp 1b)...
+
+===== MANIPULATION CHECK =====
+Anchor recall rate: 100.0% (7857 / 7857)
+# A tibble: 3 × 4
+  model                     recalled mean_est     n
+  <chr>                     <lgl>       <dbl> <int>
+1 claude-haiku-4-5-20251001 TRUE         53.6  2690
+2 gemini-2.5-flash          TRUE         58.8  2191
+3 gpt-5-mini-2025-08-07     TRUE         45.9  2976
+
+===== Exp 1b: WITHIN-SUBJECTS =====
+  [Not yet collected; deferred.]
+
+[11/15] Recommendation Analysis (Reviewer Response)...
+
+===== 12. RECOMMENDATION ANALYSIS (Reviewer Response) =====
+
+--- A. Monotonicity Validation ---
+
+Unconditional Monotonicity (All observations):
+# A tibble: 10 × 4
+   upside_decile     n mean_upside mean_rec_numeric
+           <int> <int>       <dbl>            <dbl>
+ 1             1   752     -0.136             0.665
+ 2             2   752     -0.0279            0.904
+ 3             3   751      0.0373            0.891
+ 4             4   751      0.0822            0.980
+ 5             5   751      0.117             0.995
+ 6             6   751      0.157             0.864
+ 7             7   751      0.221             0.738
+ 8             8   751      0.304             0.605
+ 9             9   751      0.409             0.642
+10            10   751      0.690             0.598
+
+Monotonicity within Anchor Condition:
+# A tibble: 17 × 5
+   anchor_direction upside_decile     n mean_upside mean_rec_numeric
+   <chr>                    <int> <int>       <dbl>            <dbl>
+ 1 high                         1    21     -0.137            -0.333
+ 2 high                         2    13     -0.0473            0.231
+ 3 high                         3    50      0.0473            0.32 
+ 4 high                         4    90      0.0855            0.867
+ 5 high                         5   141      0.118             0.972
+ 6 high                         6   501      0.163             0.796
+ 7 high                         7   676      0.223             0.709
+ 8 high                         8   751      0.304             0.605
+ 9 high                         9   751      0.409             0.642
+10 high                        10   751      0.690             0.598
+11 low                          1   731     -0.136             0.694
+12 low                          2   739     -0.0276            0.916
+13 low                          3   701      0.0366            0.932
+14 low                          4   661      0.0817            0.995
+15 low                          5   610      0.117             1    
+16 low                          6   250      0.147             1    
+17 low                          7    75      0.207             1    
+
+--- B. Ordered Model Estimation ---
+  [Insufficient data for ordered probit.]
+
+--- C. Mediation-Style Check ---
+  [Insufficient data for mediation analysis.]
+
+[12/15] 18-Cell AnI Matrix (Aggregating all batches)...
+
+===== 11. 18-CELL MULTI-MODEL DEBIASING MATRIX (Across All Batches) =====
+  -> Loading all batch files from results/batch (this may take a minute)...
+# A tibble: 6 × 4
+  debiasing    `claude-haiku-4-5-20251001` `gemini-2.5-flash`  
+  <chr>        <chr>                       <chr>               
+1 adversarial  0.742 [0.612, 0.904]        0.431 [0.334, 0.513]
+2 cot          0.373 [0.267, 0.495]        0.486 [0.369, 0.573]
+3 multi_source 0.272 [0.137, 0.363]        0.351 [0.253, 0.444]
+4 neutral      0.368 [0.228, 0.488]        0.231 [0.153, 0.330]
+5 none         0.589 [0.490, 0.705]        0.673 [0.546, 0.791]
+6 warning      0.109 [-0.049, 0.206]       0.250 [0.189, 0.340]
+  `gpt-5-mini-2025-08-07`
+  <chr>                  
+1 0.150 [0.125, 0.184]   
+2 0.113 [0.089, 0.144]   
+3 0.147 [0.124, 0.191]   
+4 0.089 [0.065, 0.118]   
+5 0.287 [0.230, 0.349]   
+6 0.080 [0.058, 0.118]   
+
+[13/15] Appendix B: Anchor Exposure Metrics (Reviewer Response)...
+
+===== 13. APPENDIX B: ANCHOR EXPOSURE METRICS =====
+  Saved exposure metrics to results/appendix_table_B1_anchor_exposure.csv
+
+[14/15] Appendix B: Anchor Recall Salience Check (Reviewer Response)...
+
+===== 14. APPENDIX B: ANCHOR RECALL SALIENCE CHECK =====
+
+--- Appendix Table B2: Regression of anchor_recalled on persona indicators ---
+OLS Regression with Company Clustered SEs:
+
+t test of coefficients:
+
+                                    Estimate Std. Error   t value Pr(>|t|)    
+(Intercept)                       0.99925706 0.00049106 2034.8934   <2e-16 ***
+model_factorgemini-2.5-flash      0.00074294 0.00049106    1.5129   0.1303    
+model_factorgpt-5-mini-2025-08-07 0.00074294 0.00049106    1.5129   0.1303    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+
+--- Appendix Figure B1 Data: Anchor Recall Rate by Persona ---
+# A tibble: 3 × 5
+  model                     debiasing recall_rate     n       se
+  <chr>                     <chr>           <dbl> <int>    <dbl>
+1 claude-haiku-4-5-20251001 none            0.999  2692 0.000525
+2 gemini-2.5-flash          none            1      2191 0       
+3 gpt-5-mini-2025-08-07     none            1      2691 0       
+
+[15/15] Appendix B: Company-Level AnI Distribution (Table 4 Addition)...
+
+===== 15. APPENDIX B: COMPANY-LEVEL AnI DISTRIBUTION (Table 4) =====
+  Saved company-level AnI distribution to results/appendix_table_B3_ani_distribution.csv
+# A tibble: 3 × 6
+  model                     n_companies AnI_min AnI_median AnI_max AnI_mean
+  <chr>                           <int>   <dbl>      <dbl>   <dbl>    <dbl>
+1 claude-haiku-4-5-20251001          18  0.108       0.506   0.745    0.465
+2 gemini-2.5-flash                   15  0.0383      0.465   0.758    0.453
+3 gpt-5-mini-2025-08-07              18  0.0503      0.198   0.397    0.184
+
+============================================================
+ANALYSIS COMPLETE
+============================================================
